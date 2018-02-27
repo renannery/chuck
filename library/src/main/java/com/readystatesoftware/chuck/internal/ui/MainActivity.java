@@ -15,13 +15,21 @@
  */
 package com.readystatesoftware.chuck.internal.ui;
 
+import android.Manifest;
 import android.content.pm.ApplicationInfo;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.Toolbar;
 
+import com.karumi.dexter.Dexter;
+import com.karumi.dexter.MultiplePermissionsReport;
+import com.karumi.dexter.PermissionToken;
+import com.karumi.dexter.listener.PermissionRequest;
+import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 import com.readystatesoftware.chuck.R;
 import com.readystatesoftware.chuck.internal.data.HttpTransaction;
+
+import java.util.List;
 
 public class MainActivity extends BaseChuckActivity implements TransactionListFragment.OnListFragmentInteractionListener {
 
@@ -37,6 +45,21 @@ public class MainActivity extends BaseChuckActivity implements TransactionListFr
                     .add(R.id.container, TransactionListFragment.newInstance())
                     .commit();
         }
+
+        Dexter.withActivity(this)
+                .withPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE)
+                .withListener(new MultiplePermissionsListener() {
+                    @Override
+                    public void onPermissionsChecked(MultiplePermissionsReport report) {
+                        
+                    }
+
+                    @Override
+                    public void onPermissionRationaleShouldBeShown(List<PermissionRequest> permissions, PermissionToken token) {
+
+                    }
+                })
+                .check();
     }
 
     @Override

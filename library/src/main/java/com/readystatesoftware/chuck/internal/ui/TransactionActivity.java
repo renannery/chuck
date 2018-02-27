@@ -19,7 +19,11 @@ import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -29,7 +33,6 @@ import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
-import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -43,6 +46,8 @@ import com.readystatesoftware.chuck.internal.data.LocalCupboard;
 import com.readystatesoftware.chuck.internal.support.FormatUtils;
 import com.readystatesoftware.chuck.internal.support.SimpleOnPageChangedListener;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -124,9 +129,23 @@ public class TransactionActivity extends BaseChuckActivity implements LoaderMana
         return loader;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         transaction = LocalCupboard.getInstance().withCursor(data).get(HttpTransaction.class);
+
+        File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS + "/mock/");
+        if (!dir.exists())
+            dir.mkdirs();
+        String fileName = transaction.getPath().replace("/", "_").substring(1, transaction.getPath().length()) + "_" + transaction.getResponseCode();
+        File file = new File(dir, transaction.getId() + "_" + fileName);
+
+        try (FileWriter fileWrite = new FileWriter(file)) {
+            fileWrite.append(transaction.getFormattedResponseBody());
+        } catch (Exception e) {
+
+        }
+
         populateUI();
     }
 
